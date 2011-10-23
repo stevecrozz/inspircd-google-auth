@@ -1,0 +1,15 @@
+inspircd-google-auth is an inspIRCd module. When enabled it handles
+authentication using a https Google API call.
+
+I have never written anything in C++ so if something looks ugly, it probably
+is. I'd love to hear feedback on how to improve this module.
+
+First, add the module to your inspIRCd source under src/modules, compile and
+install.
+
+Next, add these lines to your configuration to enable the module.
+
+<module name="m_googleauth.so">
+<googleauth
+  domainrestriction="yourdomain.com"
+  killreason="Access denied.">
