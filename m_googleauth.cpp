@@ -1,12 +1,8 @@
-/*       +------------------------------------+
- *       | Inspire Internet Relay Chat Daemon |
- *       +------------------------------------+
+/* +------------------------------------+
+ * | Inspire Internet Relay Chat Daemon |
+ * +------------------------------------+
  *
- *  InspIRCd: (C) 2002-2010 InspIRCd Development Team
- * See: http://wiki.inspircd.org/Credits
- *
- * This program is free but copyrighted software; see
- *            the file COPYING for details.
+ * inspirecd-google-auth: (C) 2011 Stephen Crosby
  *
  * ---------------------------------------------------
  */
@@ -21,7 +17,7 @@
 
 /* $ModDesc: Allow/Deny connections based on google account authentication */
 /* $CompileFlags: exec("curl-config --cflags") */
-/* $LinkerFlags:  -lcurl */
+/* $LinkerFlags: -lcurl */
 
 enum AuthState {
 	AUTH_STATE_NONE = 0,
@@ -31,7 +27,7 @@ enum AuthState {
 
 size_t curlWriteCallback(char* buf, size_t size, size_t nmemb, void* up)
 {
-  return size*nmemb; //tell curl how many bytes we handled
+	return size*nmemb; //tell curl how many bytes we handled
 }
 
 class ModuleGoogleAuth : public Module
@@ -39,7 +35,7 @@ class ModuleGoogleAuth : public Module
 	LocalIntExt pendingExt;
 	std::string domainrestriction;
 	std::string killreason;
-  std::string authresponse;
+	std::string authresponse;
 	bool verbose;
 
  public:
@@ -77,55 +73,55 @@ class ModuleGoogleAuth : public Module
 			if (verbose)
 				ServerInstance->SNO->WriteToSnoMask('c', "Forbidden connection from %s!%s@%s (No password provided)", user->nick.c_str(), user->ident.c_str(), user->host.c_str());
 
-      pendingExt.set(user, AUTH_STATE_FAIL);
+			pendingExt.set(user, AUTH_STATE_FAIL);
 			return MOD_RES_PASSTHRU;
 		}
 
-    std::string googleAccountName = user->nick;
-    if (!domainrestriction.empty()) {
-      googleAccountName += "@" + domainrestriction;
-    } else {
-      return MOD_RES_PASSTHRU;
-    }
+		std::string googleAccountName = user->nick;
+		if (!domainrestriction.empty()) {
+			googleAccountName += "@" + domainrestriction;
+		} else {
+			return MOD_RES_PASSTHRU;
+		}
 
-    CURL *curl;
-    CURLcode curl_code;
-    curl = curl_easy_init();
-    long http_code = 0;
+		CURL *curl;
+		CURLcode curl_code;
+		curl = curl_easy_init();
+		long http_code = 0;
 
-    std::string queryParameters = "";
-    queryParameters += "Email=";
-    queryParameters += curl_easy_escape(curl, googleAccountName.c_str(),  strlen(googleAccountName.c_str()));
-    queryParameters += "&Passwd=";
-    queryParameters += curl_easy_escape(curl, user->password.c_str(), strlen(user->password.c_str()));
-    queryParameters += "&accountType=GOOGLE";
-    queryParameters += "&source=";
-    queryParameters += USER_AGENT;
-    queryParameters += "&service=";
-    queryParameters += GOOGLE_AUTH_SERVICE;
+		std::string queryParameters = "";
+		queryParameters += "Email=";
+		queryParameters += curl_easy_escape(curl, googleAccountName.c_str(),	strlen(googleAccountName.c_str()));
+		queryParameters += "&Passwd=";
+		queryParameters += curl_easy_escape(curl, user->password.c_str(), strlen(user->password.c_str()));
+		queryParameters += "&accountType=GOOGLE";
+		queryParameters += "&source=";
+		queryParameters += USER_AGENT;
+		queryParameters += "&service=";
+		queryParameters += GOOGLE_AUTH_SERVICE;
 
 		if (verbose)
-		  ServerInstance->SNO->WriteToSnoMask('c', "Attempting to authenticate '%s' with google...", googleAccountName.c_str());
+			ServerInstance->SNO->WriteToSnoMask('c', "Attempting to authenticate '%s' with google...", googleAccountName.c_str());
 
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, GOOGLE_AUTH_URL);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, queryParameters.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(queryParameters.c_str()));
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+		curl_easy_setopt(curl, CURLOPT_URL, GOOGLE_AUTH_URL);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, queryParameters.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(queryParameters.c_str()));
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
 
-    curl_code = curl_easy_perform(curl);
-    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-    curl_easy_cleanup(curl);
+		curl_code = curl_easy_perform(curl);
+		curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+		curl_easy_cleanup(curl);
 
 		pendingExt.set(user, AUTH_STATE_BUSY);
 
 		if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
-      pendingExt.set(user, AUTH_STATE_NONE);
-    } else {
-      pendingExt.set(user, AUTH_STATE_FAIL);
-    }
+			pendingExt.set(user, AUTH_STATE_NONE);
+		} else {
+			pendingExt.set(user, AUTH_STATE_FAIL);
+		}
 
 		return MOD_RES_PASSTHRU;
 	}
