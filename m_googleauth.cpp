@@ -103,8 +103,8 @@ class ModuleGoogleAuth : public Module
 		if (verbose)
 			ServerInstance->SNO->WriteToSnoMask('c', "Attempting to authenticate '%s' with google...", googleAccountName.c_str());
 
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 		curl_easy_setopt(curl, CURLOPT_URL, GOOGLE_AUTH_URL);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, queryParameters.c_str());
