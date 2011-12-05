@@ -9,6 +9,7 @@
 
 #include "inspircd.h"
 #include <curl/curl.h>
+#include <algorithm.h>
 #include "hash.h"
 
 #define GOOGLE_AUTH_URL "https://www.google.com/accounts/ClientLogin"
@@ -78,6 +79,7 @@ class ModuleGoogleAuth : public Module
 		}
 
 		std::string googleAccountName = user->nick;
+		std::replace(googleAccountName.begin(), googleAccountName.end(), '_', '.');
 		if (!domainrestriction.empty()) {
 			googleAccountName += "@" + domainrestriction;
 		} else {
